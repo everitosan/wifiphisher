@@ -7,6 +7,7 @@ Wifiphisher.py
 import pyric
 import pyric.pyw as pyw
 import random
+import dbus
 from constants import *
 
 class NotEnoughInterfacesFoundError(Exception):
@@ -169,6 +170,52 @@ class  ApInterfaceMacAddrInvalidError(Exception):
                "This is due to the specified mac address may be invalid")
         Exception.__init__(self, message)
 
+class DeauthInterfaceManagedByNMError(Exception):
+    """
+    Exception class to raise in case of NetworkManager controls the
+    deauth interface.
+    :param self: A DeauthInterfaceManagedByNMError object
+    :type self: DeauthInterfaceManagedByNMError
+    :return: None
+    :rtype: None
+    """
+    def __init__(self):
+        """
+        Construct the class.
+
+        :param self: An DeauthInterfaceManagedByNMError object
+        :type self: DeauthInterfaceManagedByNMError object
+        :return: None
+        :rtype: None
+        """
+
+        message = ("We have failed to specify the jamming interface. This due to "
+               "the specified interface is controlling by NetworkManager.")
+        Exception.__init__(self, message)
+
+class ApInterfaceManagedByNMError(Exception):
+    """
+    Exception class to raise in case of NetworkManager controls the
+    AP interface.
+    :param self: An ApInterfaceManagedByNMError object
+    :type self: ApInterfaceManagedByNMError
+    :return: None
+    :rtype: None
+    """
+    def __init__(self):
+        """
+        Construct the class.
+
+        :param self: An ApInterfaceManagedByNMError object
+        :type self: ApInterfaceManagedByNMError object
+        :return: None
+        :rtype: None
+        """
+
+        message = ("We have failed to specify the AP interface. This due to "
+               "the specified interface is controlling by NetworkManager.")
+        Exception.__init__(self, message)
+
 class NetworkAdapter(object):
     """
     This class represents a newtrok interface (network adapter).
@@ -195,6 +242,7 @@ class NetworkAdapter(object):
         self.being_used = False
         self._prev_mac = None
         self._current_mac = None
+        self.is_internet_iface = False
 
         # Set monitor and AP mode if card supports it
         card = pyw.getcard(name)
@@ -400,12 +448,13 @@ class NetworkManager(object):
 
         # Populate ap_available and monitor_available lists
         for k, interface in self._interfaces.iteritems():
-            # Add all the interfaces with monitor mode
-            if interface.has_monitor_mode():
-                monitor_available.append(interface)
-            # Add all the interfaces with AP mode
-            if interface.has_ap_mode():
-                ap_available.append(interface)
+            if not interface.being_used:
+                # Add all the interfaces with monitor mode
+                if interface.has_monitor_mode():
+                    monitor_available.append(interface)
+                # Add all the interfaces with AP mode
+                if interface.has_ap_mode():
+                    ap_available.append(interface)
 
         # Raise error if no interface with AP mode is found
         if len(ap_available) == 0:
@@ -453,7 +502,7 @@ class NetworkManager(object):
 
     def get_ap_iface(self, interface_name=None):
         for k, interface in self._interfaces.iteritems():
-            if interface_name == None:
+            if interface_name == None and not interface.being_used:
                 if interface.has_ap_mode():
                     return interface
             if k == interface_name and not interface.being_used:
@@ -465,26 +514,91 @@ class NetworkManager(object):
             raise NoApInterfaceFoundError
         raise ApInterfaceInvalidError
 
+    def _is_iface_managed_by_nm(self, iface):
+        """
+        Check if the interface is managed by NetworkManager
+
+        :param self: A NetworkManager object
+        :type self: NetworkManager
+        :param iface: Interface name
+        :type iface: str
+        :return True if nterface is managed by NetworkManager
+        :rtype bool
+        """
+        bus = dbus.SystemBus()
+        nm_proxy = bus.get_object(NM_APP_PATH, NM_MANAGER_OBJ_PATH)
+        nm = dbus.Interface(nm_proxy, dbus_interface=NM_MANAGER_INTERFACE_PATH)
+        devs = nm.GetDevices()
+        is_managed = False
+        for dev_obj_path in devs:
+            dev_proxy = bus.get_object(NM_APP_PATH, dev_obj_path)
+            dev = dbus.Interface(dev_proxy, dbus_interface=dbus.PROPERTIES_IFACE)
+            if dev.Get(NM_DEV_INTERFACE_PATH, 'Interface') == iface:
+                is_managed = dev.Get(NM_DEV_INTERFACE_PATH, 'Managed')
+        return is_managed
+
     def set_internet_iface(self, iface):
-        if pyw.iswireless(iface):
-            raise Exception
         self.internet_iface = iface
+        if pyw.iswireless(iface):
+            iface_obj = self._interfaces[iface]
+            iface_obj.being_used = True
+            iface_obj.is_internet_iface = True
+            self._interfaces[iface] = iface_obj
 
     def set_ap_iface(self, iface):
+        """
+        Specify the ap interface
+        
+        :param self: A NetworkManager object
+        :param iface: AP interface Name
+        :type self: NetworkManager
+        :type iface: str
+        :return: None
+        """
         self.ap_iface = iface
         iface_obj = self._interfaces[iface]
         iface_obj.being_used = True
         self._interfaces[iface] = iface_obj
 
     def set_jam_iface(self, iface):
+        """
+        Specify the jamming interface
+        
+        :param self: A NetworkManager object
+        :param iface: Deauth interface name
+        :type self: NetworkManager
+        :type iface: str
+        :return: None
+        :rtype: None
+        """
         self.jam_iface = iface
         iface_obj = self._interfaces[iface]
         iface_obj.being_used = True
         self._interfaces[iface] = iface_obj
+   
+    def check_ifaces_uncontrolled_by_nm(self):
+        """
+        Check the interfaces are uncontrolled by NM
+        
+        :param self: A NetworkManager object
+        :type self: NetworkManager
+        :return: None
+        :rtype: None
+        :raises DeauthInterfaceManagedByNMError if deauth interface is in managed state
+        :raises ApInterfaceManagedByNMError if ap interface is in managed state
+        """
+
+        for iface, iface_obj in self._interfaces.iteritems():
+            if iface == self.jam_iface:
+                if self._is_iface_managed_by_nm(iface):
+                    raise DeauthInterfaceManagedByNMError
+            elif iface == self.ap_iface:
+                if self._is_iface_managed_by_nm(iface):
+                    raise ApInterfaceManagedByNMError 
 
     def reset_ifaces_to_managed(self):
         for k, i in self._interfaces.iteritems():
-            if i.being_used:
+            if i.being_used and not i.is_internet_iface:
                 self.set_interface_mode(i, "managed")
     
     def randomize_ap_interface_mac_addr(self, mac=None):

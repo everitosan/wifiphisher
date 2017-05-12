@@ -518,7 +518,6 @@ def display_access_points(information, mac_matcher):
     screen.refresh()
     box.refresh()
 
-
 def kill_interfering_procs():
     # Kill any possible programs that may interfere with the wireless card
     # For systems with airmon-ng installed
@@ -630,7 +629,12 @@ class WifiphisherEngine:
                 # randomize the mac addresses
                 if not args.no_mac_randomization:
                     ap_iface.randomize_interface_mac(args.mac_ap_interface)
-            kill_interfering_procs()
+
+            if not args.internetinterface:
+                kill_interfering_procs()
+            else:
+                self.network_manager.check_ifaces_uncontrolled_by_nm()
+
             self.network_manager.set_interface_mode(mon_iface, "monitor")
         except (interfaces.NotEnoughInterfacesFoundError,
                 interfaces.JammingInterfaceInvalidError,
@@ -638,7 +642,9 @@ class WifiphisherEngine:
                 interfaces.NoApInterfaceFoundError,
                 interfaces.NoMonitorInterfaceFoundError,
                 interfaces.DeauthInterfaceMacAddrInvalidError,
-                interfaces.ApInterfaceMacAddrInvalidError) as err:
+                interfaces.ApInterfaceMacAddrInvalidError,
+                interfaces.DeauthInterfaceManagedByNMError,
+                interfaces.ApInterfaceManagedByNMError) as err:
             print ("[{0}!{1}] " + str(err)).format(R, W)
             time.sleep(1)
             self.stop()
@@ -740,7 +746,7 @@ class WifiphisherEngine:
         if args.presharedkey:
             self.access_point.set_psk(args.presharedkey)
         if args.internetinterface:
-            self.access_point.set_internet_interface(args.presharedkey)
+            self.access_point.set_internet_interface(args.internetinterface)
         print '[' + T + '*' + W + '] Starting the fake access point...'
         try:
             self.access_point.start()
