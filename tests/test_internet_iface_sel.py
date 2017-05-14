@@ -1,9 +1,7 @@
 import sys
 import os
 import unittest
-import dbus
-import pdb
-import pyric.pyw as pyw
+import mock
 
 dir_of_executable = os.path.dirname(__file__)
 path_to_project_root = os.path.abspath(os.path.join(dir_of_executable, '..'))
@@ -11,87 +9,96 @@ sys.path.insert(0, path_to_project_root)
 os.chdir(path_to_project_root)
 
 import wifiphisher.common.interfaces as interfaces
-import wifiphisher.common.constants as constants
-import wifiphisher.pywifiphisher as pywifiphisher
+
+def is_managed_with_correct_setting(iface):
+    """
+    Test with the unmanaged-property is correctly set for AP and Deauth interfaces
+    """
+    return False
+
+def is_managed_with_incorrect_setting(iface_obj):
+    """
+    Test with the un-managed property is not correctly set for AP
+    """
+    if iface_obj._support_ap_mode:
+        return True
+    else:
+        return False
+
+def fake_check_iface_managed_by_nm(nm, check_managed_func):
+    for iface, iface_obj in nm._interfaces.iteritems():
+        if iface == nm.jam_iface or iface == nm.ap_iface:
+            if check_managed_func(nm.interfaces[iface]):
+                raise interfaces.InterfaceManagedByNetworkManagerError
 
 class TestInternetIfaceSelection(unittest.TestCase):
 
     def setUp(self):
-        bus = dbus.SystemBus()
-        nm_proxy = bus.get_object(constants.NM_APP_PATH, constants.NM_MANAGER_OBJ_PATH)
-        nm = dbus.Interface(nm_proxy, dbus_interface=constants.NM_MANAGER_INTERFACE_PATH)
-        devs = nm.GetDevices()
-        self.internet_iface = ""
-        self.other_ifaces = []
+        #setup NetworkManager
+        ap_iface_obj = mock.MagicMock()
+        ap_iface_obj._name = 'wlan0'
+        ap_iface_obj._support_ap_mode = True
+        ap_iface_obj._support_monitor_mode = False
+        ap_iface_obj.is_internet_iface = False
 
-        for dev_obj_path in devs:
-            dev_proxy = bus.get_object(constants.NM_APP_PATH, dev_obj_path)
-            dev = dbus.Interface(dev_proxy, dbus_interface=dbus.PROPERTIES_IFACE)
-            state = dev.Get(constants.NM_DEV_INTERFACE_PATH, 'State')
-            iface_name = dev.Get(constants.NM_DEV_INTERFACE_PATH, 'Interface')
-            #check connected device
-            if state == 100:
-                self.internet_iface = str(iface_name)
-            elif pyw.iswireless(str(iface_name)):
-                self.other_ifaces.append(str(iface_name))
+        conn_iface_obj = mock.MagicMock()
+        conn_iface_obj._name = 'wlan1'
+        conn_iface_obj._support_ap_mode = False
+        conn_iface_obj._support_monitor_mode = False
+        conn_iface_obj.is_internet_iface = True
 
-    def sel_ap_iface(self, ap_iface_name):
-        self.nm.set_ap_iface(ap_iface_name)
-        self.nm.check_ifaces_uncontrolled_by_nm()
 
-    def sel_jamming_and_ap_ifaces(self, ap_if_name, jam_if_name):
-        self.nm.set_jam_iface(jam_if_name)
-        self.nm.set_ap_iface(ap_if_name)
-        self.nm.check_ifaces_uncontrolled_by_nm()
-        
+        self.nm = mock.MagicMock()
+        self.nm.ap_iface = 'wlan0'
+        self.nm.jam_iface = ""
+        self.nm._interfaces = {}
+
+        for iface_obj in [ap_iface_obj, conn_iface_obj]:
+            self.nm._interfaces[iface_obj._name] = iface_obj
+
     def test_no_jamming_with_internet(self):
         """
         Test with -nJ case with internet connection
+        And the managed property is correctly set
         """
-        if not self.internet_iface:
-            self.fail('Make sure to have internet access')
-        self.nm = interfaces.NetworkManager()
-        self.nm.set_internet_iface(self.internet_iface)
-        ap_iface = self.nm.get_ap_iface()
-        self.sel_ap_iface(ap_iface.get_name())
+        fake_check_iface_managed_by_nm(self.nm, is_managed_with_correct_setting)
 
     def test_using_internet_iface_as_ap_iface(self):
         """
         Test with -nJ case and use internet iface as AP iface
         should raise InterfaceManagedByNetworkManagerError exception
         """
-        if not self.internet_iface:
-            self.fail('Make sure to have internet access')
-        self.nm = interfaces.NetworkManager()
-        self.nm.set_internet_iface(self.internet_iface)
         self.assertRaises(interfaces.InterfaceManagedByNetworkManagerError,
-                self.sel_ap_iface, self.internet_iface)
+            fake_check_iface_managed_by_nm, self.nm, is_managed_with_incorrect_setting)
 
     def test_jamming_with_internet_access(self):
         """
         Test three interfaces ap/deauth/internet iface
         """
-        if not self.internet_iface:
-            self.fail('Make sure to have internet access')
-        if len(self.other_ifaces) < 2:
-            self.fail('Number of adapters are not enough')
-        self.nm = interfaces.NetworkManager()
-        self.nm.set_internet_iface(self.internet_iface)
-        mon_iface, ap_iface = self.nm.find_interface_automatically()
-        self.sel_jamming_and_ap_ifaces(ap_iface.get_name(), mon_iface.get_name())
+        deauth_iface_obj = mock.MagicMock()
+        deauth_iface_obj._name = 'wlan2'
+        deauth_iface_obj._support_ap_mode = False
+        deauth_iface_obj._support_monitor_mode = True
+        deauth_iface_obj.is_internet_iface = False
+        self.nm.jam_iface = 'wlan2'
+        self.nm._interfaces[deauth_iface_obj._name] = deauth_iface_obj
 
-    def test_wo_internet_access(self):
+        fake_check_iface_managed_by_nm(self.nm, is_managed_with_correct_setting)
+
+    @mock.patch('wifiphisher.pywifiphisher.kill_interfering_procs', return_value=0)
+    def test_wo_internet_access(self, kill_proc):
         """
         Test without internet access
         """
-        if len(self.other_ifaces) < 2:
-            self.fail('Number of adapters are not enough')
-        self.nm = interfaces.NetworkManager()
-        self.nm.set_internet_iface(self.internet_iface)
-        mon_iface, ap_iface = self.nm.find_interface_automatically()
-        self.nm.set_jam_iface(mon_iface.get_name())
-        self.nm.set_ap_iface(ap_iface.get_name())
-        pywifiphisher.kill_interfering_procs()
+        deauth_iface_obj = mock.MagicMock()
+        deauth_iface_obj._name = 'wlan2'
+        deauth_iface_obj._support_ap_mode = False
+        deauth_iface_obj._support_monitor_mode = True
+        deauth_iface_obj.is_internet_iface = False
+        self.nm.jam_iface = 'wlan2'
+        self.nm._interfaces[deauth_iface_obj._name] = deauth_iface_obj
+
+        kill_proc()
 
 if __name__ == '__main__':
     unittest.main()
