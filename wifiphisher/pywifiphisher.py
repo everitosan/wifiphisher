@@ -643,8 +643,7 @@ class WifiphisherEngine:
                 interfaces.NoMonitorInterfaceFoundError,
                 interfaces.DeauthInterfaceMacAddrInvalidError,
                 interfaces.ApInterfaceMacAddrInvalidError,
-                interfaces.DeauthInterfaceManagedByNMError,
-                interfaces.ApInterfaceManagedByNMError) as err:
+                interfaces.InterfaceManagedByNetworkManagerError) as err:
             print ("[{0}!{1}] " + str(err)).format(R, W)
             time.sleep(1)
             self.stop()

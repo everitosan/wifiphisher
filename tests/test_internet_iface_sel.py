@@ -58,13 +58,14 @@ class TestInternetIfaceSelection(unittest.TestCase):
     def test_using_internet_iface_as_ap_iface(self):
         """
         Test with -nJ case and use internet iface as AP iface
-        should raise ApInterfaceManagedByNMError exception
+        should raise InterfaceManagedByNetworkManagerError exception
         """
         if not self.internet_iface:
             self.fail('Make sure to have internet access')
         self.nm = interfaces.NetworkManager()
         self.nm.set_internet_iface(self.internet_iface)
-        self.assertRaises(interfaces.ApInterfaceManagedByNMError, self.sel_ap_iface, self.internet_iface)
+        self.assertRaises(interfaces.InterfaceManagedByNetworkManagerError,
+                self.sel_ap_iface, self.internet_iface)
 
     def test_jamming_with_internet_access(self):
         """

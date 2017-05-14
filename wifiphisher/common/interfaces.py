@@ -170,35 +170,12 @@ class  ApInterfaceMacAddrInvalidError(Exception):
                "This is due to the specified mac address may be invalid")
         Exception.__init__(self, message)
 
-class DeauthInterfaceManagedByNMError(Exception):
-    """
-    Exception class to raise in case of NetworkManager controls the
-    deauth interface.
-    :param self: A DeauthInterfaceManagedByNMError object
-    :type self: DeauthInterfaceManagedByNMError
-    :return: None
-    :rtype: None
-    """
-    def __init__(self):
-        """
-        Construct the class.
-
-        :param self: An DeauthInterfaceManagedByNMError object
-        :type self: DeauthInterfaceManagedByNMError object
-        :return: None
-        :rtype: None
-        """
-
-        message = ("We have failed to specify the jamming interface. This due to "
-               "the specified interface is controlling by NetworkManager.")
-        Exception.__init__(self, message)
-
-class ApInterfaceManagedByNMError(Exception):
+class InterfaceManagedByNetworkManagerError(Exception):
     """
     Exception class to raise in case of NetworkManager controls the
     AP interface.
-    :param self: An ApInterfaceManagedByNMError object
-    :type self: ApInterfaceManagedByNMError
+    :param self: An InterfaceManagedByNetworkManagerError object
+    :type self: InterfaceManagedByNetworkManagerError
     :return: None
     :rtype: None
     """
@@ -212,8 +189,11 @@ class ApInterfaceManagedByNMError(Exception):
         :rtype: None
         """
 
-        message = ("We have failed to specify the AP interface. This due to "
-               "the specified interface is controlling by NetworkManager.")
+        message = ("Interface is controlled by NetworkManager. You need to manually "
+               "set the devices that should be ignored by NetworkManager using the "
+               "keyfile plugin (unmanaged-directive). For example, '[keyfile] "
+               "unmanaged-devices=interface-name:wlan0' needs to be added in your "
+               "NetworkManager configuration file.")
         Exception.__init__(self, message)
 
 class NetworkAdapter(object):
@@ -589,12 +569,9 @@ class NetworkManager(object):
         """
 
         for iface, iface_obj in self._interfaces.iteritems():
-            if iface == self.jam_iface:
+            if iface == self.jam_iface or iface == self.ap_iface:
                 if self._is_iface_managed_by_nm(iface):
-                    raise DeauthInterfaceManagedByNMError
-            elif iface == self.ap_iface:
-                if self._is_iface_managed_by_nm(iface):
-                    raise ApInterfaceManagedByNMError 
+                    raise InterfaceManagedByNetworkManagerError
 
     def reset_ifaces_to_managed(self):
         for k, i in self._interfaces.iteritems():
