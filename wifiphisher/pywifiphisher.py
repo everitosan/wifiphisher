@@ -786,13 +786,13 @@ class WifiphisherEngine:
                 while 1:
                     term.clear()
                     with term.hidden_cursor():
-                        print term.move(0, term.width - 30) + "|"
-                        print term.move(1, term.width - 30) + "|" + " " + term.bold_blue("Wifiphisher " + VERSION)
-                        print term.move(2, term.width - 30) + "|" + " ESSID: " + essid
-                        print term.move(3, term.width - 30) + "|" + " Channel: " + channel
-                        print term.move(4, term.width - 30) + "|" + " AP interface: " + ap_iface.get_name()
-                        print term.move(5, term.width - 30) + "|" + "_"*29
-                        print term.move(1, 0) + term.blue("Deauthenticating clients: ")
+                        # print term.move(0, term.width - 30) + "|"
+                        # print term.move(1, term.width - 30) + "|" + " " + term.bold_blue("Wifiphisher " + VERSION)
+                        # print term.move(2, term.width - 30) + "|" + " ESSID: " + essid
+                        # print term.move(3, term.width - 30) + "|" + " Channel: " + channel
+                        # print term.move(4, term.width - 30) + "|" + " AP interface: " + ap_iface.get_name()
+                        # print term.move(5, term.width - 30) + "|" + "_"*29
+                        # print term.move(1, 0) + term.blue("Deauthenticating clients: ")
                         if not args.nojamming:
                             # only show clients when jamming
                             if deauthentication.get_clients():
