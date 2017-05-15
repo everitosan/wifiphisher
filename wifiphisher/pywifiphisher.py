@@ -120,7 +120,8 @@ def parse_args():
     parser.add_argument(
         "-sM",
         "--scriptMode",
-        help=("disable the print at the terminal")
+        help=("disable the print at the terminal"),
+        action='store_true'
     )
 
     return parser.parse_args()
