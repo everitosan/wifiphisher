@@ -117,6 +117,11 @@ def parse_args():
         "-iNM",
         "--no-mac-randomization",
         help=("Do not change any MAC address"), action='store_true')
+    parser.add_argument(
+        "-sM",
+        "--scriptMode",
+        help=("disable the print at the terminal")
+    )
 
     return parser.parse_args()
 
@@ -561,15 +566,18 @@ class WifiphisherEngine:
         self.fw.on_exit()
 
         if os.path.isfile('/tmp/wifiphisher-webserver.tmp'):
-            m_requests = open('/tmp/wifiphisher-webserver.tmp', 'r')
-            m_file = open('/home/stjimmy/Desktop/wifi.txt', 'a')
-            m_file.write(m_requests.read())
-            m_file.close()
-            m_requests.close()
+            writeOnLog('/home/stjimmy/Desktop/wifiphisher-log.txt')
             os.remove('/tmp/wifiphisher-webserver.tmp')
 
         print '[' + R + '!' + W + '] Closing'
         sys.exit(0)
+
+    def writeOnLog(self, logFilePath):
+        m_requests = open('/tmp/wifiphisher-webserver.tmp', 'r')
+        m_file = open(logFilePath, 'a')
+        m_file.write(m_requests.read())
+        m_file.close()
+        m_requests.close()
 
     def start(self):
         # Parse args
@@ -791,14 +799,15 @@ class WifiphisherEngine:
                 while 1:
                     term.clear()
                     with term.hidden_cursor():
-                        # print term.move(0, term.width - 30) + "|"
-                        # print term.move(1, term.width - 30) + "|" + " " + term.bold_blue("Wifiphisher " + VERSION)
-                        # print term.move(2, term.width - 30) + "|" + " ESSID: " + essid
-                        # print term.move(3, term.width - 30) + "|" + " Channel: " + channel
-                        # print term.move(4, term.width - 30) + "|" + " AP interface: " + ap_iface.get_name()
-                        # print term.move(5, term.width - 30) + "|" + "_"*29
-                        # print term.move(1, 0) + term.blue("Deauthenticating clients: ")
-                        if not args.nojamming:
+                        if not args.scriptMode:
+                            print term.move(0, term.width - 30) + "|"
+                            print term.move(1, term.width - 30) + "|" + " " + term.bold_blue("Wifiphisher " + VERSION)
+                            print term.move(2, term.width - 30) + "|" + " ESSID: " + essid
+                            print term.move(3, term.width - 30) + "|" + " Channel: " + channel
+                            print term.move(4, term.width - 30) + "|" + " AP interface: " + ap_iface.get_name()
+                            print term.move(5, term.width - 30) + "|" + "_"*29
+                            print term.move(1, 0) + term.blue("Deauthenticating clients: ")
+                        if not args.nojamming and not args.scriptMode:
                             # only show clients when jamming
                             if deauthentication.get_clients():
                                 # show the 5 most recent devices
@@ -806,12 +815,15 @@ class WifiphisherEngine:
                                     print client
                         print term.move(6,0) + term.blue("DHCP Leases: ")
                         if os.path.isfile('/var/lib/misc/dnsmasq.leases'):
-                            proc = check_output(['tail', '-5', '/var/lib/misc/dnsmasq.leases'])
-                            print term.move(7,0) + proc
-                        print term.move(13,0) + term.blue("HTTP requests: ")
+                            if not args.scriptMode:
+                                proc = check_output(['tail', '-5', '/var/lib/misc/dnsmasq.leases'])
+                                print term.move(7,0) + proc
+                                print term.move(13,0) + term.blue("HTTP requests: ")
                         if os.path.isfile('/tmp/wifiphisher-webserver.tmp'):
-                            proc = check_output(['tail', '-5', '/tmp/wifiphisher-webserver.tmp'])
-                            print term.move(14,0) + proc
+                            if not args.scriptMode:
+                                proc = check_output(['tail', '-5', '/tmp/wifiphisher-webserver.tmp'])
+                                print term.move(14,0) + proc
+                            writeOnLog('/home/stjimmy/Desktop/wifiphisher-log-1.txt')
                         if phishinghttp.terminate and args.quitonsuccess:
                             raise KeyboardInterrupt
         except KeyboardInterrupt:
