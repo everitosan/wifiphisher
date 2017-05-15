@@ -561,6 +561,11 @@ class WifiphisherEngine:
         self.fw.on_exit()
 
         if os.path.isfile('/tmp/wifiphisher-webserver.tmp'):
+            m_requests = open('/tmp/wifiphisher-webserver.tmp', 'r')
+            m_file = open('/home/stjimmy/Desktop/wifi.txt', 'a')
+            m_file.write(m_requests.read())
+            m_file.close()
+            m_requests.close()
             os.remove('/tmp/wifiphisher-webserver.tmp')
 
         print '[' + R + '!' + W + '] Closing'
