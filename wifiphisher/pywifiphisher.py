@@ -584,7 +584,7 @@ class WifiphisherEngine:
                     m_file.write(m_requests.read())
                     m_file.close()
                 previous_log.close()
-            elif:
+            else:
                 m_file = open(logFilePath, 'a')
                 m_file.write(m_requests.read())
                 m_file.close()
