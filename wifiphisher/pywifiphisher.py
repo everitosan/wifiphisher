@@ -581,7 +581,11 @@ class WifiphisherEngine:
     def writeOnLog(self, logFilePath):
         server_log = '/tmp/wifiphisher-webserver.tmp'
         if os.path.isfile(server_log):
-            copyfile(server_log, logFilePath+self.logFileName)
+            m_request = open(server_log, 'r')
+            m_log = open(logFilePath+self.logFileName, 'w')
+            m_log.write(m_request.read())
+            m_request.close()
+            m_log.close()
 
     def start(self):
         # Parse args
