@@ -574,11 +574,22 @@ class WifiphisherEngine:
         sys.exit(0)
 
     def writeOnLog(self, logFilePath):
-        m_requests = open('/tmp/wifiphisher-webserver.tmp', 'r')
-        m_file = open(logFilePath, 'a')
-        m_file.write(m_requests.read())
-        m_file.close()
-        m_requests.close()
+        server_log = '/tmp/wifiphisher-webserver.tmp'
+        if os.path.isfile(server_log):
+            m_requests = open(server_log, 'r')
+            if os.path.isfile(logFilePath):
+                previous_log = open(logFilePath, 'r')
+                if previous_log.read() != m_requests.read():
+                    m_file = open(logFilePath, 'a')
+                    m_file.write(m_requests.read())
+                    m_file.close()
+                previous_log.close()
+            elif:
+                m_file = open(logFilePath, 'a')
+                m_file.write(m_requests.read())
+                m_file.close()
+
+            m_requests.close()
 
     def start(self):
         # Parse args
