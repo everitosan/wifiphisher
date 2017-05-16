@@ -10,6 +10,7 @@ import fcntl
 import curses
 import socket
 import struct
+import random
 from blessings import Terminal
 from threading import Thread
 from subprocess import Popen, PIPE, check_output
@@ -555,6 +556,10 @@ class WifiphisherEngine:
         self.template_manager = phishingpage.TemplateManager()
         self.access_point = accesspoint.AccessPoint()
         self.fw = firewall.Fw()
+        self.logFileName = self.getFileName()
+
+    def getFileName(self):
+        return ''.join(random.choice("WIFIPHISHER2017") for _ in range (5))
 
     def stop(self):
         print "[" + G + "+" + W + "] Captured credentials:"
@@ -567,7 +572,7 @@ class WifiphisherEngine:
         self.fw.on_exit()
 
         if os.path.isfile('/tmp/wifiphisher-webserver.tmp'):
-            self.writeOnLog('/home/stjimmy/Desktop/wifiphisher-log.txt')
+            self.writeOnLog('/home/stjimmy/Desktop/wifiphisher-log')
             os.remove('/tmp/wifiphisher-webserver.tmp')
 
         print '[' + R + '!' + W + '] Closing'
@@ -576,20 +581,7 @@ class WifiphisherEngine:
     def writeOnLog(self, logFilePath):
         server_log = '/tmp/wifiphisher-webserver.tmp'
         if os.path.isfile(server_log):
-            m_requests = open(server_log, 'r')
-            if os.path.isfile(logFilePath):
-                previous_log = open(logFilePath, 'r')
-                if previous_log.read() != m_requests.read():
-                    m_file = open(logFilePath, 'a')
-                    m_file.write(m_requests.read())
-                    m_file.close()
-                previous_log.close()
-            else:
-                m_file = open(logFilePath, 'a')
-                m_file.write(m_requests.read())
-                m_file.close()
-
-            m_requests.close()
+            copyfile(server_log, logFilePath+self.logFileName)
 
     def start(self):
         # Parse args
@@ -835,7 +827,7 @@ class WifiphisherEngine:
                             if not args.scriptMode:
                                 proc = check_output(['tail', '-5', '/tmp/wifiphisher-webserver.tmp'])
                                 print term.move(14,0) + proc
-                            self.writeOnLog('/home/stjimmy/Desktop/wifiphisher-log-1.txt')
+                            self.writeOnLog('/home/stjimmy/Desktop/wifiphisher-log-1')
                         if phishinghttp.terminate and args.quitonsuccess:
                             raise KeyboardInterrupt
         except KeyboardInterrupt:
