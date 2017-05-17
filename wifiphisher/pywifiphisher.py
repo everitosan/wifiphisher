@@ -586,6 +586,7 @@ class WifiphisherEngine:
             m_log.write(m_request.read())
             m_request.close()
             m_log.close()
+            time.sleep(1)
 
     def start(self):
         # Parse args
