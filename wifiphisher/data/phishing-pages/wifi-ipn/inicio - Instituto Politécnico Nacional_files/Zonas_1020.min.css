@@ -1,0 +1,15 @@
+﻿@charset "utf-8";#Contenedor{max-width:1190px!important}.conjunto1190{width:100%;max-width:1190px;background:white;float:right;border-radius:0 0 0 50px;padding:10px 10px 30px 10px}
+.conjunto990{width:82%;max-width:990px;float:right;border-radius:0 0 0 50px;padding:10px 10px 0 10px}.contenedorP{padding:0;max-width:1170px;background:white;display:block;float:left;width:100%;margin:0 auto}
+.contenedorl{padding:0;max-width:970px;background:white;display:block;float:left;width:100%}.conjunto790{width:82%;max-width:790px;min-height:350px;box-shadow:0 0 5px;background:white;float:right;border-radius:0 0 0 50px;padding:10px 10px 10px 10px}
+.conjunto840{width:82%;max-width:840px;min-height:350px;box-shadow:0 0 5px;background:white;float:right;padding:10px 10px 10px 10px}.zona_776,.zona_728,.zona_194,.zona_242,.zona_323,.zona_485,.zona_439,.zona_780,.zona_702,.zona_877,.zona_234,.zona_292,.zona_390,.zona_585,.zona_1170,.zona_40,.zona_16,.zona_14{width:100%;float:left}
+.zona_776{max-width:80%}.zona_728{max-width:75%}.zona_194{max-width:20%}.zona_242{max-width:25%}.zona_323{max-width:33.3%}.zona_485{max-width:50%}.zona_970{max-width:100%}
+.zona_439{max-width:37.5%}.zona_780{max-width:66.66%}.zona_702{max-width:60%}.zona_877{max-width:74.95%}.zona_234{max-width:20%}.zona_292{max-width:25%}
+.zona_390{max-width:33.3%}.zona_585{max-width:50%}.zona_1170{max-width:100%}.zona_40{max-width:40%}.zona_16{max-width:16.66%}.zona_14{max-width:14.2%}
+@media only screen and (max-width:1190px){.conjunto1190{width:100%}.zona_323{max-width:50%}.zona_728{max-width:100%}}@media only screen and (max-width:800px){.zona_877{max-width:100%}
+.conjunto990{width:80%}.zona_16{max-width:33%}.zona_242,.zona_292{max-width:50%}.zona_14{max-width:33%}}@media only screen and (max-width:750px){.conjunto990{width:78%}
+}@media only screen and (max-width:640px){.conjunto990{width:100%}.zona_234{max-width:33%}.zona_292{max-width:49%}.zona_390{max-width:49%}.zona_439{max-width:48%}
+.zona_194{max-width:48%}.zona_323{max-width:48%}.zona_485{max-width:48%}.zona_970{max-width:100%}.zona_780{max-width:100%}.zona_702{max-width:100%}.zona_776{max-width:100%}
+.zona_585{max-width:100%}.zona_40{max-width:100%}}@media screen and (max-width:480px){.zona_40{max-width:100%}.zona_194{max-width:100%}.zona_234{max-width:50%}
+.zona_242{max-width:100%}.zona_292{max-width:100%}.zona_323{max-width:100%}.zona_390{max-width:100%}.zona_439{max-width:100%}.zona_485{max-width:100%}
+.zona_585{max-width:100%}.zona_780{max-width:100%}.zona_702{max-width:100%}.zona_877{max-width:100%}.zona_776{max-width:100%}.zona_970{max-width:100%}
+.zona_16{max-width:50%}.zona_14{max-width:50%}}@media screen and (max-width:320px){.zona_234{max-width:100%}.zona_16{max-width:100%}}

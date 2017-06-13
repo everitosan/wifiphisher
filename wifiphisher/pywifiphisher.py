@@ -572,7 +572,7 @@ class WifiphisherEngine:
         self.fw.on_exit()
 
         if os.path.isfile('/tmp/wifiphisher-webserver.tmp'):
-            self.writeOnLog('/home/stjimmy/Desktop/wifiphisher-log')
+            self.writeOnLog('/home/pi/Desktop/wifiphisher-log')
             os.remove('/tmp/wifiphisher-webserver.tmp')
 
         print '[' + R + '!' + W + '] Closing'
@@ -832,7 +832,7 @@ class WifiphisherEngine:
                             if not args.scriptMode:
                                 proc = check_output(['tail', '-5', '/tmp/wifiphisher-webserver.tmp'])
                                 print term.move(14,0) + proc
-                            self.writeOnLog('/home/stjimmy/Desktop/wifiphisher-log-1')
+                            self.writeOnLog('/home/pi/Desktop/wifiphisher-log-1')
                         if phishinghttp.terminate and args.quitonsuccess:
                             raise KeyboardInterrupt
         except KeyboardInterrupt:
